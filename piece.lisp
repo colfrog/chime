@@ -30,5 +30,7 @@
 
 (define-presentation-method present ((piece piece) (type piece) stream (view board-view) &key)
   (with-slots (image-path) piece
-    (let ((pattern (make-pattern-from-bitmap-file image-path :format :png)))
+    (let ((pattern (climi::%collapse-pattern
+		    (make-pattern-from-bitmap-file image-path :format :png)
+		    0 0 46 46)))
       (draw-pattern* stream pattern 2 2))))
