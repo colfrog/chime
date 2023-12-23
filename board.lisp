@@ -7,45 +7,46 @@
 	   (make-array '(8 8)
 		       :element-type 'field
 		       :initial-element
-		       (make-instance 'field :col 0 :row 0 :piece nil)))))
+		       (make-instance 'field :col 0 :row 0 :piece nil))
+	   :accessor fields)))
 
 (defmethod initialize-instance :after ((board board) &key)
-  (with-slots ((f fields)) board
+  (with-slots (fields) board
     (dotimes (i 8)
       (dotimes (j 8)
-	(setf (aref f i j)
+	(setf (aref fields i j)
 	      (make-instance
 	       'field
-	       :col i
-	       :row j
+	       :row i
+	       :col j
 	       :piece (cond
-			((= j 1)
+			((= i 1)
 			 (make-instance 'pawn :colour "black" :field nil))
-			((= j 6)
+			((= i 6)
 			 (make-instance 'pawn :colour "white" :field nil))
-			((or (= j 0) (= j 7))
-			 (let ((colour (if (= j 0) "black" "white")))
+			((or (= i 0) (= i 7))
+			 (let ((colour (if (= i 0) "black" "white")))
 			   (cond
-			     ((or (= i 0) (= i 7))
+			     ((or (= j 0) (= j 7))
 			      (make-instance 'rook :colour colour :field nil))
-			     ((or (= i 1) (= i 6))
+			     ((or (= j 1) (= j 6))
 			      (make-instance 'knight :colour colour :field nil))
-			     ((or (= i 2) (= i 5))
+			     ((or (= j 2) (= j 5))
 			      (make-instance 'bishop :colour colour :field nil))
-			     ((= i 3)
+			     ((= j 3)
 			      (make-instance 'queen :colour colour :field nil))
-			     ((= i 4)
+			     ((= j 4)
 			      (make-instance 'king :colour colour :field nil))
 			     (t nil))))
 			(t nil))))
-	(let* ((field (aref f i j))
+	(let* ((field (aref fields i j))
 	       (piece (piece field)))
 	  (when piece
 	    (setf (slot-value piece 'field) field)))))))
 
 (define-presentation-method present ((board board) (type board) stream (view board-view) &key)
-  (with-slots ((f fields)) board
+  (with-slots (fields) board
     (dotimes (i 8)
       (dotimes (j 8)
-	(with-translation (stream (* 50 i) (* 50 j))
-	  (present (aref f i j)))))))
+	(with-translation (stream (* 50 j) (* 50 i))
+	  (present (aref fields i j)))))))

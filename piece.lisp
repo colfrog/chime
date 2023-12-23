@@ -22,11 +22,8 @@
 	   colour
 	   ".png")))))
 
-(defgeneric possible-moves (piece fields)
+(defgeneric possible-moves (piece board)
   (:documentation "Returns a list of possible moves"))
-
-(defgeneric is-possible-move (piece fields move)
-  (:documentation "Checks if the move is a possible move"))
 
 (define-presentation-method present ((piece piece) (type piece) stream (view board-view) &key)
   (with-slots (image-path) piece
