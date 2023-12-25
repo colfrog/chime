@@ -4,4 +4,4 @@
   ((kind :initform "rook")))
 
 (defmethod possible-moves ((rook rook) (board board))
-  '())
+  (lines rook board))
