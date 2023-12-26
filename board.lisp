@@ -44,6 +44,17 @@
 	  (when piece
 	    (setf (slot-value piece 'field) field)))))))
 
+(defmethod is-checkmate ((board board) (colour string))
+  (with-slots (fields) board
+    (dotimes (i 8)
+      (dotimes (j 8)
+	(let* ((field (aref fields i j))
+	       (piece (piece field)))
+	  (when (and (string= (kind piece) "king")
+		     (string= (colour piece) colour))
+	    (return (and (equal (possible-moves piece board) '())
+			 (is-checked field board colour)))))))))
+
 (define-presentation-method present ((board board) (type board) stream (view board-view) &key)
   (with-slots (fields) board
     (dotimes (i 8)
