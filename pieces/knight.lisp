@@ -8,7 +8,7 @@
     (with-slots (colour field) knight
       (let ((moves '()))
 	(dolist (delta '((2 . 1) (-2 . -1) (-2 . 1) (2 . -1)
-			    (1 . 2) (-1 . -2) (-1 . 2) (1 . -2)))
+			 (1 . 2) (-1 . -2) (-1 . 2) (1 . -2)))
 	  (let ((row (+ (row field) (car delta)))
 		(col (+ (col field) (cdr delta))))
 	    (when (and (<= 0 row 7)
