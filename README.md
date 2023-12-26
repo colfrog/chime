@@ -23,6 +23,6 @@ Then you can load chime.asd and run it
 
 ```lisp
 CL-USER> (load "chime.asd") ; it's important to be in Chime's root directory for it to find the sprites
-CL-USER> (asdf:loadsystem :chime)
+CL-USER> (asdf:load-system :chime)
 CL-USER> (chime:main)
 ```
