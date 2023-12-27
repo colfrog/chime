@@ -49,21 +49,23 @@
 
       (let ((moves (possible-moves (piece field) (board frame))))
 	(flet ((move-results-in-check (move)
-		 (with-slots (fields) board
-		   (let* ((target-field (aref fields (car move) (cdr move)))
-			  (piece (piece field))
-			  (backup-piece (piece target-field))
-			  (colour (current-player frame)))
-		     (setf (slot-value target-field 'piece) piece)
-		     (setf (slot-value field 'piece) nil)
-		     (let ((result (is-checked
-				    (field (if (string= colour "white")
-					       (king-white board)
-					       (king-black board)))
-				    board colour)))
-		       (setf (slot-value target-field 'piece) backup-piece)
-		       (setf (slot-value field 'piece) piece)
-		       result)))))
+		 (if (string= (kind (piece field)) "king")
+		     nil
+		     (with-slots (fields) board
+		       (let* ((target-field (aref fields (car move) (cdr move)))
+			      (piece (piece field))
+			      (backup-piece (piece target-field))
+			      (colour (current-player frame)))
+			 (setf (slot-value target-field 'piece) piece)
+			 (setf (slot-value field 'piece) nil)
+			 (let ((result (is-checked
+					(field (if (string= colour "white")
+						   (king-white board)
+						   (king-black board)))
+					board colour)))
+			   (setf (slot-value target-field 'piece) backup-piece)
+			   (setf (slot-value field 'piece) piece)
+			   result))))))
 	  (let ((legal-moves (remove-if #'move-results-in-check moves)))
 	    (when legal-moves
 	      (setf selected-field field)
@@ -92,6 +94,11 @@
     (setf (slot-value piece 'field) field)
     (setf (slot-value selected-field 'piece) nil)
     (setf (slot-value selected-field 'selected) nil)
+
+    (when (and (string= (kind piece) "pawn")
+	       (= (row field) (if (string= (colour piece) "white") 0 7)))
+      (setf (slot-value field 'piece) (make-instance 'queen :colour (colour piece) :field field)))
+    
     (setf selected-field nil)
     (dolist (highlighted-field (highlighted-fields frame))
       (setf (slot-value highlighted-field 'highlighted) nil))
