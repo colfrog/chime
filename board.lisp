@@ -8,7 +8,11 @@
 		       :element-type 'field
 		       :initial-element
 		       (make-instance 'field :col 0 :row 0 :piece nil))
-	   :accessor fields)))
+	   :accessor fields)
+   (king-white :initform nil
+	       :accessor king-white)
+   (king-black :initform nil
+	       :accessor king-black)))
 
 (defmethod initialize-instance :after ((board board) &key)
   (with-slots (fields) board
@@ -36,7 +40,9 @@
 			     ((= j 3)
 			      (make-instance 'queen :colour colour :field nil))
 			     ((= j 4)
-			      (make-instance 'king :colour colour :field nil))
+			      (setf (slot-value board (if (string= colour "white")
+							  'king-white 'king-black))
+				    (make-instance 'king :colour colour :field nil)))
 			     (t nil))))
 			(t nil))))
 	(let* ((field (aref fields i j))

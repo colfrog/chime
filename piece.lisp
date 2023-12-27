@@ -40,7 +40,10 @@
 			 (string= (colour (piece other-field)) colour))
 		(return moves))
 	      (push (cons (row other-field) (col other-field)) moves)
-	      (when (piece other-field)
+	      (when (and (piece other-field)
+			 ;; Ignore the king to count the fields behind the king
+			 ;; when he is checked
+			 (not (string= (kind (piece other-field)) "king")))
 		(return moves)))))
 	moves))))
 
