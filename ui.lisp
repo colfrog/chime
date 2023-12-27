@@ -11,7 +11,9 @@
    (highlighted-fields :initform '()
 		       :accessor highlighted-fields)
    (selected-field :initform nil
-		   :accessor selected-field))
+		   :accessor selected-field)
+   (history :initform '()
+	    :accessor history))
   (:panes
    (app :application
 	:scroll-bars nil
@@ -98,7 +100,9 @@
     (when (and (string= (kind piece) "pawn")
 	       (= (row field) (if (string= (colour piece) "white") 0 7)))
       (setf (slot-value field 'piece) (make-instance 'queen :colour (colour piece) :field field)))
-    
+
+    (push (make-instance 'move :piece piece :from selected-field :to field) (history frame))
+
     (setf selected-field nil)
     (dolist (highlighted-field (highlighted-fields frame))
       (setf (slot-value highlighted-field 'highlighted) nil))
