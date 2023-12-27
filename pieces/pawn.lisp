@@ -3,6 +3,16 @@
 (defclass pawn (piece)
   ((kind :initform "pawn")))
 
+(defun en-passant-legal (diag)
+  (with-slots (history) *application-frame*
+    (let ((last-move (car history)))
+      (when last-move
+	(let ((delta (- (row (to-field last-move))
+			(row (from-field last-move)))))
+	  (and (= (abs delta) 2)
+	       (equal diag (cons (- (row (to-field last-move)) (/ delta 2))
+				 (col (from-field last-move))))))))))
+
 (defmethod possible-moves ((pawn pawn) (board board))
   (with-slots (colour field) pawn
     (with-slots (row col) field
@@ -35,6 +45,7 @@
 	    (when (and (<= 0 (car diag) 7)
 		       (<= 0 (cdr diag) 7))
 	      (let ((diag-piece (piece (aref fields (car diag) (cdr diag)))))
-		(when (and diag-piece (not (string= (colour diag-piece) colour)))
+		(when (or (and diag-piece (not (string= (colour diag-piece) colour)))
+			  (en-passant-legal diag))
 		  (push diag moves)))))
 	  moves)))))

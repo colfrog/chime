@@ -25,6 +25,14 @@
 (defgeneric possible-moves (piece board)
   (:documentation "Returns a list of possible moves"))
 
+(defmethod piece-has-moved ((piece piece))
+  (let ((frame *application-frame*))
+    (with-slots (history) frame
+      (dolist (move history)
+	(when (equal (piece move) piece)
+	  (return t)))
+      nil)))
+
 (defun to-opposite-piece (piece board mul)
   (with-slots (fields) board
     (with-slots (field colour) piece
