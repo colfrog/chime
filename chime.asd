@@ -5,6 +5,7 @@
   :license "bsd-2-clause"
   :description "A game of chess made with McClim"
   :components ((:file "package")
+	       (:file "move")
 	       (:file "board")
 	       (:file "piece")
 	       (:file "pieces/king")
@@ -14,6 +15,7 @@
 	       (:file "pieces/bishop")
 	       (:file "pieces/pawn")
 	       (:file "field")
+	       (:file "uci")
 	       (:file "ui"))
   :depends-on (#:mcclim)
   :build-operation "program-op"

@@ -61,9 +61,22 @@
 	    (return (and (equal (possible-moves piece board) '())
 			 (is-checked field board colour)))))))))
 
+(defmethod play-move ((board board) (move move))
+  (with-slots (fields) board
+    (with-slots (from-field to-field piece) move
+      (when piece
+	(setf (slot-value from-field 'piece) nil)
+	(setf (slot-value to-field 'piece) piece)
+	(setf (slot-value piece 'field) to-field)))))
+
 (define-presentation-method present ((board board) (type board) stream (view board-view) &key)
   (with-slots (fields) board
-    (dotimes (i 8)
-      (dotimes (j 8)
-	(with-translation (stream (* 50 j) (* 50 i))
-	  (present (aref fields i j)))))))
+    (let ((player-colour (player-colour *application-frame*)))
+      (dotimes (i 8)
+	(dotimes (j 8)
+	  (with-translation (stream (* 50 j) (* 50 i))
+	    (present
+	     (aref fields (if (string= player-colour "white")
+				i
+				(- 7 i))
+		   j))))))))

@@ -4,8 +4,8 @@
   (present (board frame) 'board :stream stream))
 
 (define-application-frame chime ()
-  ((current-player :initform "white"
-		   :accessor current-player)
+  ((player-colour :initform "black";:initform (if (= (random 2) 1) "white" "black")
+		  :accessor player-colour)
    (board :initform (make-instance 'board)
 	  :accessor board)
    (highlighted-fields :initform '()
@@ -13,7 +13,9 @@
    (selected-field :initform nil
 		   :accessor selected-field)
    (history :initform '()
-	    :accessor history))
+	    :accessor history)
+   (uci :initform (make-instance 'uci :executable-path "stockfish"
+				      :options '(("Skill Level" . "3")))))
   (:panes
    (app :application
 	:scroll-bars nil
@@ -24,12 +26,21 @@
 	:display-function 'draw
 	:default-view (make-instance 'board-view))))
 
+(defmethod initialize-instance :after ((frame chime) &key)
+  (with-slots (uci player-colour board) frame
+    (setup uci)
+    (wait-ready uci)
+    (when (string= player-colour "black")
+      (let ((best-move (get-best-move uci board)))
+	(play-move board best-move)
+	(play-move uci best-move)))))
+
 (defun test-field-selection (field &rest args)
   (declare (ignore args))
   (let* ((piece (piece field))
 	 (frame *application-frame*)
 	 (board (board frame))
-	 (colour (current-player frame))
+	 (colour (player-colour frame))
 	 (king (if (string= colour "white")
 		   (king-white board) (king-black board))))
     (and piece (string= (colour piece) colour)
@@ -57,7 +68,7 @@
 		       (let* ((target-field (aref fields (car move) (cdr move)))
 			      (piece (piece field))
 			      (backup-piece (piece target-field))
-			      (colour (current-player frame)))
+			      (colour (player-colour frame)))
 			 (setf (slot-value target-field 'piece) piece)
 			 (setf (slot-value field 'piece) nil)
 			 (let ((result (is-checked
@@ -138,10 +149,12 @@
     (dolist (highlighted-field (highlighted-fields frame))
       (setf (slot-value highlighted-field 'highlighted) nil))
     (setf (slot-value frame 'highlighted-fields) '())
-    (setf (slot-value frame 'current-player)
-	  (if (string= (current-player frame) "white")
-	      "black"
-	      "white"))))
+
+    (with-slots (uci board history) frame
+      (play-move uci (car history))
+      (let ((best-move (get-best-move uci board)))
+	(play-move board best-move)
+	(play-move uci best-move)))))
 
 (defun main ()
   (run-frame-top-level
