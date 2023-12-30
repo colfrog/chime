@@ -62,7 +62,7 @@
 	  while line
 	  when (and (>= (length line) 3)
 			(string= (subseq line 0 3) "Fen"))
-	    return (subseq line 6))))
+	    return (subseq line 5))))
 
 (defmethod get-best-move ((uci uci) (board board) &key (depth 5))
   (with-slots (input-stream output-stream) uci
@@ -73,6 +73,5 @@
 		  while line
 		  when (string= (subseq line 0 8) "bestmove")
 		    return line)))
-      (print bestmove-line *debug-io*)
       (from-uci (cadr (uiop:split-string bestmove-line :separator " "))
 		board))))
