@@ -4,7 +4,7 @@
   (present (board frame) 'board :stream stream))
 
 (define-application-frame chime ()
-  ((player-colour :initform "black";:initform (if (= (random 2) 1) "white" "black")
+  ((player-colour :initform (if (= (random 2) 1) "white" "black")
 		  :accessor player-colour)
    (board :initform (make-instance 'board)
 	  :accessor board)
