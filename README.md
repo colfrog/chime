@@ -7,8 +7,8 @@ To play, all you need is a Common Lisp compiler and quicklisp.
 You can compile it to a binary and run it
 
 ```bash
-# make
-# ./chime
+$ make
+$ ./chime
 ```
 
 Or you can load it from a Common Lisp compiler and run chime:main
