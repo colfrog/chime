@@ -14,8 +14,7 @@
 		   :accessor selected-field)
    (history :initform '()
 	    :accessor history)
-   (uci :initform (make-instance 'uci :executable-path "stockfish"
-				      :options '(("Skill Level" . "3")))))
+   (uci :initarg :uci))
   (:panes
    (app :application
 	:scroll-bars nil
@@ -28,12 +27,15 @@
 
 (defmethod initialize-instance :after ((frame chime) &key)
   (with-slots (uci player-colour board) frame
-    (setup uci)
-    (wait-ready uci)
-    (when (string= player-colour "black")
-      (let ((best-move (get-best-move uci board)))
-	(play-move board best-move)
-	(play-move uci best-move)))))
+    (if uci
+	(progn
+	  (setup uci)
+	  (wait-ready uci)
+	  (when (string= player-colour "black")
+	    (let ((best-move (get-best-move uci board)))
+	      (play-move board best-move)
+	      (play-move uci best-move))))
+	(setf player-colour "white"))))
 
 (defun test-field-selection (field &rest args)
   (declare (ignore args))
@@ -102,60 +104,32 @@
     ((field 'field :gesture (:select :tester test-target-field)))
   (let* ((frame *application-frame*)
 	 (selected-field (selected-field frame))
-	 (piece (piece selected-field))
-	 (eaten-piece (piece field)))
-    (setf (slot-value field 'piece) piece)
-    (setf (slot-value piece 'field) field)
-    (setf (slot-value selected-field 'piece) nil)
-    (setf (slot-value selected-field 'selected) nil)
-
-    ;; promotion
-    (when (and (string= (kind piece) "pawn")
-	       (= (row field) (if (string= (colour piece) "white") 0 7)))
-      (setf (slot-value field 'piece) (make-instance 'queen :colour (colour piece) :field field)))
-
-    ;; en passant
-    (when (string= (kind piece) "pawn")
-      (let ((row-delta (- (row field) (row selected-field)))
-	    (col-delta (- (col field) (col selected-field))))
-	(when (and (= (abs row-delta) 1) (= (abs col-delta) 1)
-		   (not eaten-piece))
-	  (let ((en-passant-field (aref (fields (board frame))
-					(row selected-field)
-					(col field))))
-	    (setf (slot-value en-passant-field 'piece) nil)))))
-
+	 (piece (piece selected-field)))
     (push (make-instance 'move :piece piece :from selected-field :to field) (history frame))
 
-    ;; castle
-    (when (and (string= (kind piece) "king")
-	       (= (abs (- (col field) (col selected-field))) 2))
-      (let* ((fields (fields (board frame)))
-	     (position (get-position field))
-	     (rook-position (cond
-			      ((equal position '(0 . 2)) '(0 . 0))
-			      ((equal position '(0 . 6)) '(0 . 7))
-			      ((equal position '(7 . 2)) '(7 . 0))
-			      ((equal position '(7 . 6)) '(7 . 7))))
-	     (rook-field (aref fields (car rook-position) (cdr rook-position)))
-	     (rook (piece rook-field))
-	     (rook-target-field (aref fields (row rook-field)
-				      (if (= (col rook-field) 0) 3 5))))
-	(setf (slot-value rook-target-field 'piece) rook)
-	(setf (slot-value rook 'field) rook-target-field)
-	(setf (slot-value rook-field 'piece) nil)))
-
+    (setf (slot-value selected-field 'selected) nil)
     (setf selected-field nil)
     (dolist (highlighted-field (highlighted-fields frame))
       (setf (slot-value highlighted-field 'highlighted) nil))
     (setf (slot-value frame 'highlighted-fields) '())
 
-    (with-slots (uci board history) frame
-      (play-move uci (car history))
-      (let ((best-move (get-best-move uci board)))
-	(play-move board best-move)
-	(play-move uci best-move)))))
+    (with-slots (uci board history player-colour) frame
+      (play-move board (car history))
+      (if uci
+	  (progn
+	    (play-move uci (car history))
+	    (let ((best-move (get-best-move uci board)))
+	      (play-move board best-move)
+	      (play-move uci best-move)
+	      (push best-move (history frame))))
+	  (setf player-colour
+		(if (string= player-colour "white")
+		    "black" "white"))))))
 
 (defun main ()
   (run-frame-top-level
-   (make-instance 'chime)))
+   (make-instance 'chime
+		  :uci (make-instance
+			'uci
+			:executable-path "stockfish"
+			:options '(("Skill Level" . "3"))))))

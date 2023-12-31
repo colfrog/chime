@@ -65,9 +65,45 @@
   (with-slots (fields) board
     (with-slots (from-field to-field piece) move
       (when piece
-	(setf (slot-value from-field 'piece) nil)
-	(setf (slot-value to-field 'piece) piece)
-	(setf (slot-value piece 'field) to-field)))))
+	(let ((frame *application-frame*)
+	      (eaten-piece (piece to-field)))
+	  (setf (slot-value from-field 'piece) nil)
+	  (setf (slot-value to-field 'piece) piece)
+	  (setf (slot-value piece 'field) to-field)
+
+	  ;; promotion
+	  (when (and (string= (kind piece) "pawn")
+		     (= (row to-field) (if (string= (colour piece) "white") 0 7)))
+	    (setf (slot-value to-field 'piece) (make-instance 'queen :colour (colour piece) :field to-field)))
+
+	  ;; en passant
+	  (when (string= (kind piece) "pawn")
+	    (let ((row-delta (- (row to-field) (row from-field)))
+		  (col-delta (- (col to-field) (col from-field))))
+	      (when (and (= (abs row-delta) 1) (= (abs col-delta) 1)
+			 (not eaten-piece))
+		(let ((en-passant-field (aref (fields (board frame))
+					      (row from-field)
+					      (col to-field))))
+		  (setf (slot-value en-passant-field 'piece) nil)))))
+
+	  ;; castle
+	  (when (and (string= (kind piece) "king")
+		     (= (abs (- (col to-field) (col from-field))) 2))
+	    (let* ((fields (fields (board frame)))
+		   (position (get-position to-field))
+		   (rook-position (cond
+				    ((equal position '(0 . 2)) '(0 . 0))
+				    ((equal position '(0 . 6)) '(0 . 7))
+				    ((equal position '(7 . 2)) '(7 . 0))
+				    ((equal position '(7 . 6)) '(7 . 7))))
+		   (rook-field (aref fields (car rook-position) (cdr rook-position)))
+		   (rook (piece rook-field))
+		   (rook-target-field (aref fields (row rook-field)
+					    (if (= (col rook-field) 0) 3 5))))
+	      (setf (slot-value rook-target-field 'piece) rook)
+	      (setf (slot-value rook 'field) rook-target-field)
+	      (setf (slot-value rook-field 'piece) nil))))))))
 
 (define-presentation-method present ((board board) (type board) stream (view board-view) &key)
   (with-slots (fields) board

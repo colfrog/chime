@@ -64,7 +64,7 @@
 			(string= (subseq line 0 3) "Fen"))
 	    return (subseq line 5))))
 
-(defmethod get-best-move ((uci uci) (board board) &key (depth 5))
+(defmethod get-best-move ((uci uci) (board board) &key (depth 3))
   (with-slots (input-stream output-stream) uci
     (format input-stream "go depth ~d~%" depth)
     (force-output input-stream)
