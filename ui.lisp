@@ -73,9 +73,15 @@
 			      (colour (player-colour frame)))
 			 (setf (slot-value target-field 'piece) piece)
 			 (setf (slot-value field 'piece) nil)
-			 (let ((result (is-checked target-field board colour)))
+			 (setf (slot-value piece 'field) target-field)
+			 (let ((result (is-checked
+					(field (if (string= colour "white")
+						   (king-white board)
+						   (king-black board)))
+					board colour)))
 			   (setf (slot-value target-field 'piece) backup-piece)
 			   (setf (slot-value field 'piece) piece)
+			   (setf (slot-value piece 'field) field)
 			   result))))))
 	  (let ((legal-moves (remove-if #'move-results-in-check moves)))
 	    (when legal-moves
