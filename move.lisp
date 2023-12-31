@@ -12,13 +12,23 @@
 (defparameter *uci-columns* "abcdefgh")
 
 (defmethod to-uci ((move move))
-  (with-slots (from-field to-field) move
-    (format nil
-	    "~c~c~c~c"
-	    (aref *uci-columns* (col from-field))
-	    (aref *uci-rows* (row from-field))
-	    (aref *uci-columns* (col to-field))
-	    (aref *uci-rows* (row to-field)))))
+  (with-slots (piece from-field to-field) move
+    (let ((uci-move (format nil
+			    "~c~c~c~c"
+			    (aref *uci-columns* (col from-field))
+			    (aref *uci-rows* (row from-field))
+			    (aref *uci-columns* (col to-field))
+			    (aref *uci-rows* (row to-field)))))
+
+      ;; Handle promotion
+      (when (and (string= (kind piece) "pawn")
+		 (= (row to-field)
+		    (if (string= (colour piece) "white")
+			0 7)))
+	(setf uci-move (concatenate 'string uci-move
+				    (if (string= (colour piece) "white")
+					"Q" "q"))))
+      uci-move)))
 
 (defun from-uci (uci-move board)
   (let* ((from (cons
