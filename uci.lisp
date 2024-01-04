@@ -35,6 +35,7 @@
     (format input-stream "isready~%")
     (force-output input-stream)
     (loop for line = (read-line output-stream)
+	  while line
 	  until (and (>= (length line) 7)
 		     (string= (subseq line 0 7) "readyok")))))
 
