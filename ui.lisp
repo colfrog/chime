@@ -44,11 +44,9 @@
 	 (board (board frame))
 	 (colour (player-colour frame))
 	 (king (if (string= colour "white")
-		   (king-white board) (king-black board))))
+		   (king-white board) (king-black board)))
+	 (checked (is-checked (field king) board colour)))
     (and piece (string= (colour piece) colour)
-	 (or (and (is-checked (field king) board colour)
-		  (string= (kind piece) "king"))
-	     (not (is-checked (field king) board colour)))
 	 (/= (length (possible-moves piece (board frame))) 0))))
 
 (define-command (com-select-field :name t :command-table chime)
