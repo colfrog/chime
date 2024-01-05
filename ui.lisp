@@ -62,25 +62,23 @@
 
       (let ((moves (possible-moves (piece field) (board frame))))
 	(flet ((move-results-in-check (move)
-		 (if (string= (kind (piece field)) "king")
-		     nil
-		     (with-slots (fields) board
-		       (let* ((target-field (aref fields (car move) (cdr move)))
-			      (piece (piece field))
-			      (backup-piece (piece target-field))
-			      (colour (player-colour frame)))
-			 (setf (slot-value target-field 'piece) piece)
-			 (setf (slot-value field 'piece) nil)
-			 (setf (slot-value piece 'field) target-field)
-			 (let ((result (is-checked
-					(field (if (string= colour "white")
-						   (king-white board)
-						   (king-black board)))
-					board colour)))
-			   (setf (slot-value target-field 'piece) backup-piece)
-			   (setf (slot-value field 'piece) piece)
-			   (setf (slot-value piece 'field) field)
-			   result))))))
+		 (with-slots (fields) board
+		   (let* ((target-field (aref fields (car move) (cdr move)))
+			  (piece (piece field))
+			  (backup-piece (piece target-field))
+			  (colour (player-colour frame)))
+		     (setf (slot-value target-field 'piece) piece)
+		     (setf (slot-value field 'piece) nil)
+		     (setf (slot-value piece 'field) target-field)
+		     (let ((result (is-checked
+				    (field (if (string= colour "white")
+					       (king-white board)
+					       (king-black board)))
+				    board colour)))
+		       (setf (slot-value target-field 'piece) backup-piece)
+		       (setf (slot-value field 'piece) piece)
+		       (setf (slot-value piece 'field) field)
+		       result)))))
 	  (let ((legal-moves (remove-if #'move-results-in-check moves)))
 	    (when legal-moves
 	      (setf selected-field field)
