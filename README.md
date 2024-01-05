@@ -4,6 +4,8 @@ Chime is a game of chess made in Common Lisp with McCLIM.
 
 To play, all you need is a Common Lisp compiler and quicklisp.
 
+You'll need to install stockfish to play against the AI, which is, for the moment, the default setting.
+
 You can compile it to a binary and run it
 
 ```bash
